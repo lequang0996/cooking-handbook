@@ -3,7 +3,6 @@
     <string name="app_name">Cooking Handbook</string>
     <string name="tab_home">Trang chủ</string>
     <string name="tab_favorites">Yêu thích</string>
-    <string name="tab_guide">Hướng dẫn</string>
     <string name="tab_settings">Cài đặt</string>
     <string name="home_tagline">Sổ tay nấu ăn gia đình</string>
     <string name="search_hint">Tìm món ăn hoặc nguyên liệu</string>
@@ -43,22 +42,10 @@
     <string name="theme_light">Sáng</string>
     <string name="theme_dark">Tối</string>
     <string name="settings_translate">Dịch công thức</string>
-    <string name="settings_translate_desc">Công thức gốc bằng tiếng Trung. Việc dịch chạy ngay trên thiết bị (gói ngôn ngữ ≈ 30 MB, chỉ tải một lần).</string>
+    <string name="settings_translate_desc">Công thức gốc bằng tiếng Trung. Việc dịch chạy ngay trên thiết bị bằng gói ngôn ngữ của Google (khoảng 30 MB mỗi gói, gồm tiếng Trung và ngôn ngữ của bạn, chỉ tải một lần).</string>
     <string name="settings_tts_speed">Tốc độ đọc</string>
-    <string name="settings_sync">Cập nhật công thức</string>
-    <string name="sync_desc">Món mới và nội dung chỉnh sửa được tự động lấy từ GitHub.</string>
-    <string name="sync_now">Kiểm tra ngay</string>
-    <string name="syncing">Đang kiểm tra…</string>
-    <string name="sync_done">Đã thêm hoặc cập nhật %1$d món</string>
-    <string name="sync_none">Đã là bản mới nhất</string>
-    <string name="sync_failed">Không kết nối được GitHub. Vui lòng thử lại sau.</string>
-    <string name="last_sync">Kiểm tra lần cuối: %1$s</string>
-    <string name="sync_never">Chưa lần nào</string>
     <string name="settings_privacy">Chính sách quyền riêng tư</string>
     <string name="settings_ad_privacy">Cài đặt quyền riêng tư quảng cáo</string>
-    <string name="about_title">Giới thiệu</string>
-    <string name="about_body">Công thức lấy từ dự án mã nguồn mở HowToCook của Anduin2017 và các cộng tác viên (Unlicense). Lượng calo chỉ là ước tính. Ứng dụng không liên kết với dự án này.</string>
-    <string name="version_label">Phiên bản %1$s</string>
     <string name="update_ready">Đã tải xong phiên bản mới.</string>
     <string name="update_restart">Khởi động lại</string>
     <string name="guide_title">Hướng dẫn sử dụng</string>
@@ -74,4 +61,9 @@
     <string name="guide_b5">Chạm biểu tượng trái tim ở món ăn để lưu. Mọi món đã lưu nằm trong thẻ Yêu thích.</string>
     <string name="guide_t6">Dịch và cập nhật</string>
     <string name="guide_b6">Công thức gốc bằng tiếng Trung; hãy bật dịch trong Cài đặt để đọc bằng ngôn ngữ của bạn. Món mới và chỉnh sửa trên GitHub được thêm tự động.</string>
+    <string name="difficulty_value">Độ khó %1$d/5</string>
+    <string name="tr_dialog_title">Dịch công thức?</string>
+    <string name="tr_dialog_body">Công thức gốc bằng tiếng Trung. Để dịch ngay trên thiết bị, các gói ngôn ngữ của Google (khoảng 30 MB mỗi gói, gồm tiếng Trung và ngôn ngữ của bạn) sẽ được tải một lần. Nên dùng Wi-Fi. Bạn có thể đổi lại trong Cài đặt.</string>
+    <string name="tr_dialog_yes">Tải và dịch</string>
+    <string name="tr_dialog_no">Để sau</string>
 </resources>

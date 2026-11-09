@@ -2,13 +2,15 @@ package com.fws.cookinghandbook.ui
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -19,6 +21,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -54,31 +57,19 @@ fun AppRoot(vm: AppViewModel, updater: InAppUpdater, adsReady: StateFlow<Boolean
     val route = backStack?.destination?.route
     val snackbar = remember { SnackbarHostState() }
 
-    // translation is on by default for every language except Chinese (the recipes' own language)
+    // translation needs a one-time download of language packs, so it only turns on after the user agrees
     val lang = remember { Lang.current(context) }
     val translatePref by vm.prefs.translate.collectAsState()
-    val enabled = lang != "zh" && (translatePref ?: true)
+    val enabled = lang != "zh" && translatePref == true
     val tr = remember(enabled, lang) { Tr(enabled, lang, vm.translations) }
 
     val tabs = listOf(
         Tab("home", R.string.tab_home, Icons.Filled.Home),
         Tab("favorites", R.string.tab_favorites, Icons.Filled.Favorite),
-        Tab("guide", R.string.tab_guide, Icons.Filled.MenuBook),
         Tab("settings", R.string.tab_settings, Icons.Filled.Settings),
     )
     val showBar = route in tabs.map { it.route }
     val ads by adsReady.collectAsState()
-
-    // sync result toasts
-    val syncResult by vm.syncMessage.collectAsState()
-    val doneText = syncResult?.let {
-        when {
-            !it.ok -> stringResource(R.string.sync_failed)
-            it.changed == 0 -> stringResource(R.string.sync_none)
-            else -> stringResource(R.string.sync_done, it.changed)
-        }
-    }
-    LaunchedEffect(syncResult) { if (doneText != null) { snackbar.showSnackbar(doneText); vm.consumeSyncMessage() } }
 
     // flexible in-app update finished downloading -> offer restart
     val downloaded by updater.downloaded.collectAsState()
@@ -91,13 +82,23 @@ fun AppRoot(vm: AppViewModel, updater: InAppUpdater, adsReady: StateFlow<Boolean
         }
     }
 
+    if (lang != "zh" && translatePref == null) {
+        AlertDialog(
+            onDismissRequest = { vm.prefs.setTranslate(false) },
+            title = { Text(stringResource(R.string.tr_dialog_title)) },
+            text = { Text(stringResource(R.string.tr_dialog_body)) },
+            confirmButton = { TextButton({ vm.prefs.setTranslate(true) }) { Text(stringResource(R.string.tr_dialog_yes)) } },
+            dismissButton = { TextButton({ vm.prefs.setTranslate(false) }) { Text(stringResource(R.string.tr_dialog_no)) } },
+        )
+    }
+
     CompositionLocalProvider(LocalTr provides tr) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
-                Column {
-                    if (ads) BannerAd(BuildConfig.ADMOB_BANNER_ID)
+                Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
+                    if (ads) BannerAd(BuildConfig.ADMOB_BANNER_ID, if (showBar) Modifier else Modifier.navigationBarsPadding())
                     if (showBar) NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                         tabs.forEach { t ->
                             NavigationBarItem(
@@ -128,8 +129,8 @@ fun AppRoot(vm: AppViewModel, updater: InAppUpdater, adsReady: StateFlow<Boolean
             NavHost(nav, startDestination = "home", modifier = Modifier.padding(content)) {
                 composable("home") { HomeScreen(vm, openDish) { nav.navigate("category/$it") } }
                 composable("favorites") { FavoritesScreen(vm, openDish) }
-                composable("guide") { GuideScreen() }
-                composable("settings") { SettingsScreen(vm) }
+                composable("settings") { SettingsScreen(vm) { nav.navigate("guide") } }
+                composable("guide") { GuideScreen { nav.popBackStack() } }
                 composable("category/{id}", listOf(navArgument("id") { type = NavType.StringType })) { e ->
                     CategoryScreen(vm, e.arguments?.getString("id").orEmpty(), { nav.popBackStack() }, openDish)
                 }

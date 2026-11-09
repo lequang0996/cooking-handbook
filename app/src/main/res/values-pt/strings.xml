@@ -3,7 +3,6 @@
     <string name="app_name">Cooking Handbook</string>
     <string name="tab_home">Início</string>
     <string name="tab_favorites">Favoritos</string>
-    <string name="tab_guide">Guia</string>
     <string name="tab_settings">Ajustes</string>
     <string name="home_tagline">Um manual de cozinha caseira</string>
     <string name="search_hint">Buscar pratos ou ingredientes</string>
@@ -43,22 +42,10 @@
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
     <string name="settings_translate">Traduzir receitas</string>
-    <string name="settings_translate_desc">As receitas estão em chinês. A tradução é feita no seu dispositivo (pacote de idioma ≈ 30 MB, baixado uma vez).</string>
+    <string name="settings_translate_desc">As receitas estão em chinês. A tradução é feita no seu dispositivo com pacotes de idioma do Google (cerca de 30 MB cada, para chinês e o seu idioma; baixados uma vez).</string>
     <string name="settings_tts_speed">Velocidade de leitura</string>
-    <string name="settings_sync">Atualização de receitas</string>
-    <string name="sync_desc">Pratos novos e edições são obtidos do GitHub automaticamente.</string>
-    <string name="sync_now">Verificar agora</string>
-    <string name="syncing">Verificando…</string>
-    <string name="sync_done">%1$d pratos adicionados ou atualizados</string>
-    <string name="sync_none">Já está atualizado</string>
-    <string name="sync_failed">Não foi possível acessar o GitHub. Tente novamente mais tarde.</string>
-    <string name="last_sync">Última verificação: %1$s</string>
-    <string name="sync_never">Nunca</string>
     <string name="settings_privacy">Política de privacidade</string>
     <string name="settings_ad_privacy">Configurações de privacidade de anúncios</string>
-    <string name="about_title">Sobre</string>
-    <string name="about_body">As receitas vêm do projeto de código aberto HowToCook, de Anduin2017 e colaboradores (Unlicense). As calorias são estimativas aproximadas. Este app não é afiliado ao projeto.</string>
-    <string name="version_label">Versão %1$s</string>
     <string name="update_ready">Uma nova versão foi baixada.</string>
     <string name="update_restart">Reiniciar</string>
     <string name="guide_title">Como usar</string>
@@ -74,4 +61,9 @@
     <string name="guide_b5">Toque no coração de um prato para salvá-lo. Todos os salvos ficam na aba Favoritos.</string>
     <string name="guide_t6">Tradução e atualizações</string>
     <string name="guide_b6">As receitas estão em chinês; mantenha a tradução ativada em Ajustes para lê-las no seu idioma. Pratos novos e edições do GitHub são adicionados automaticamente.</string>
+    <string name="difficulty_value">Dificuldade %1$d/5</string>
+    <string name="tr_dialog_title">Traduzir as receitas?</string>
+    <string name="tr_dialog_body">As receitas estão em chinês. Para traduzi-las no seu dispositivo, pacotes de idioma do Google (cerca de 30 MB cada, chinês e o seu idioma) são baixados uma vez. Recomendamos Wi-Fi. Você pode mudar isso depois em Ajustes.</string>
+    <string name="tr_dialog_yes">Baixar e traduzir</string>
+    <string name="tr_dialog_no">Agora não</string>
 </resources>

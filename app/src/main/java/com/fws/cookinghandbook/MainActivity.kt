@@ -14,6 +14,7 @@ import com.fws.cookinghandbook.ui.AppRoot
 import com.fws.cookinghandbook.ui.CookingHandbookTheme
 import com.fws.cookinghandbook.ui.isAppDark
 import com.fws.cookinghandbook.util.AdsConsent
+import com.fws.cookinghandbook.util.AppOpenAdManager
 import com.fws.cookinghandbook.util.InAppUpdater
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private val vm: AppViewModel by viewModels()
     private lateinit var updater: InAppUpdater
     private val adsReady = MutableStateFlow(false)
+    private val appOpenAd = AppOpenAdManager(BuildConfig.ADMOB_APP_OPEN_ID)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +39,10 @@ class MainActivity : AppCompatActivity() {
             }
             CookingHandbookTheme(theme) { AppRoot(vm, updater, adsReady) }
         }
-        AdsConsent.init(this) { adsReady.value = true }
+        AdsConsent.init(this) { adsReady.value = true; appOpenAd.enable(this) }
     }
 
-    override fun onStart() { super.onStart(); updater.start() }
+    override fun onStart() { super.onStart(); updater.start(); appOpenAd.onStart(this) }
     override fun onResume() { super.onResume(); updater.check(); vm.ensureFeatured() }
-    override fun onStop() { updater.stop(); super.onStop() }
+    override fun onStop() { updater.stop(); appOpenAd.onStop(); super.onStop() }
 }

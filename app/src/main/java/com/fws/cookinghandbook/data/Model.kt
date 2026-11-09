@@ -15,6 +15,7 @@ data class Dish(
     val servingNote: String,     // e.g. "以下用量适合 3 至 5 人食用。"
     val quantities: List<String>,  // "计算" bullets
     val steps: List<String>,
+    val images: List<String>,    // absolute URLs of the photos referenced by the markdown
     val updatedAt: Long,         // epoch millis of the last upstream commit touching the file
     val sha: String,
 )

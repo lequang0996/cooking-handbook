@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -61,6 +63,9 @@ fun BannerAd(unitId: String, modifier: Modifier = Modifier) {
         AdView(context).apply {
             setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp))
             adUnitId = unitId
+            adListener = object : AdListener() {
+                override fun onAdFailedToLoad(error: LoadAdError) { postDelayed({ loadAd(AdRequest.Builder().build()) }, 60_000L) }
+            }
             loadAd(AdRequest.Builder().build())
         }
     }

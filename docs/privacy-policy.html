@@ -51,15 +51,15 @@ certain device data as described in section 5.</p>
 <h2>4. Network connections made by the App</h2>
 <div class="scroll"><table>
 <tr><th>Service</th><th>Why</th><th>What the provider can see</th></tr>
-<tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Download new and updated recipes from the open-source project <em>Anduin2017/HowToCook</em>.</td><td>Your IP address and request headers, under <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>. No personal data is sent by the App.</td></tr>
-<tr><td>Google ML Kit Translation</td><td>Translates recipes <em>on your device</em>. The first time you use a language, a language pack (about 30 MB) is downloaded from Google.</td><td>Recipe text is <strong>not</strong> sent to Google; only the model download request is made. See <a href="https://developers.google.com/ml-kit/android-data-disclosure">ML Kit data disclosure</a>.</td></tr>
+<tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Download new and updated recipes, and the photos of a recipe when you open it, from the open-source project <em>Anduin2017/HowToCook</em>.</td><td>Your IP address and request headers, under <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>. No personal data is sent by the App.</td></tr>
+<tr><td>Google ML Kit Translation</td><td>Translates recipes <em>on your device</em>. The first time you use a language, a language pack (about 30 MB per language: Chinese and yours) is downloaded from Google, only after you agree.</td><td>Recipe text is <strong>not</strong> sent to Google; only the model download request is made. See <a href="https://developers.google.com/ml-kit/android-data-disclosure">ML Kit data disclosure</a>.</td></tr>
 <tr><td>Google Play (In-App Update, Play Core)</td><td>Checks whether a newer version of the App is available and downloads it in the background.</td><td>Handled by Google Play under <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</td></tr>
 <tr><td>Google AdMob and Google User Messaging Platform</td><td>Display ads and collect your consent choices.</td><td>See section 5.</td></tr>
 </table></div>
 <p>Text-to-speech uses the speech engine installed on your device (for example Google Text-to-speech). The App does not record audio and does not request the microphone.</p>
 
 <h2>5. Advertising (Google AdMob)</h2>
-<p>The App displays banner ads provided by <strong>Google AdMob</strong>. AdMob and its partners may collect and use
+<p>The App displays banner and app-open ads provided by <strong>Google AdMob</strong>. AdMob and its partners may collect and use
 the <strong>Advertising ID</strong>, IP address, device and OS information (model, language, screen size), app and ad interaction data,
 approximate location derived from the IP address, and diagnostics to serve, measure and protect ads, to prevent fraud and, where you consent, to personalize ads.</p>
 <ul>
@@ -117,15 +117,15 @@ Danh sách yêu thích và cài đặt chỉ lưu trên thiết bị. Ứng dụ
 <h2>4. Các kết nối mạng của Ứng dụng</h2>
 <div class="scroll"><table>
 <tr><th>Dịch vụ</th><th>Mục đích</th><th>Bên cung cấp có thể thấy</th></tr>
-<tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Tải món mới và nội dung cập nhật từ dự án mã nguồn mở <em>Anduin2017/HowToCook</em>.</td><td>Địa chỉ IP và tiêu đề yêu cầu, theo <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">chính sách của GitHub</a>. Ứng dụng không gửi dữ liệu cá nhân.</td></tr>
-<tr><td>Google ML Kit Translation</td><td>Dịch công thức <em>ngay trên thiết bị</em>. Lần đầu dùng một ngôn ngữ, gói ngôn ngữ (khoảng 30 MB) được tải từ Google.</td><td>Nội dung công thức <strong>không</strong> gửi cho Google; chỉ có yêu cầu tải mô hình. Xem <a href="https://developers.google.com/ml-kit/android-data-disclosure">công bố dữ liệu ML Kit</a>.</td></tr>
+<tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Tải món mới, nội dung cập nhật và ảnh của món khi bạn mở món đó từ dự án mã nguồn mở <em>Anduin2017/HowToCook</em>.</td><td>Địa chỉ IP và tiêu đề yêu cầu, theo <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">chính sách của GitHub</a>. Ứng dụng không gửi dữ liệu cá nhân.</td></tr>
+<tr><td>Google ML Kit Translation</td><td>Dịch công thức <em>ngay trên thiết bị</em>. Lần đầu dùng một ngôn ngữ, gói ngôn ngữ (khoảng 30 MB mỗi ngôn ngữ: tiếng Trung và ngôn ngữ của bạn) được tải từ Google, chỉ sau khi bạn đồng ý.</td><td>Nội dung công thức <strong>không</strong> gửi cho Google; chỉ có yêu cầu tải mô hình. Xem <a href="https://developers.google.com/ml-kit/android-data-disclosure">công bố dữ liệu ML Kit</a>.</td></tr>
 <tr><td>Google Play (In-App Update, Play Core)</td><td>Kiểm tra và tải bản cập nhật mới của Ứng dụng ở chế độ nền.</td><td>Do Google Play xử lý theo <a href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</a>.</td></tr>
 <tr><td>Google AdMob và Google User Messaging Platform</td><td>Hiển thị quảng cáo và ghi nhận lựa chọn đồng ý.</td><td>Xem mục 5.</td></tr>
 </table></div>
 <p>Tính năng đọc (TTS) dùng bộ máy giọng nói cài sẵn trên thiết bị. Ứng dụng không ghi âm và không xin quyền micro.</p>
 
 <h2>5. Quảng cáo (Google AdMob)</h2>
-<p>Ứng dụng hiển thị quảng cáo biểu ngữ do <strong>Google AdMob</strong> cung cấp. AdMob và đối tác có thể thu thập và sử dụng
+<p>Ứng dụng hiển thị quảng cáo biểu ngữ và quảng cáo khi mở ứng dụng do <strong>Google AdMob</strong> cung cấp. AdMob và đối tác có thể thu thập và sử dụng
 <strong>Mã nhận dạng quảng cáo (Advertising ID)</strong>, địa chỉ IP, thông tin thiết bị và hệ điều hành (kiểu máy, ngôn ngữ, kích thước màn hình), dữ liệu tương tác với ứng dụng/quảng cáo,
 vị trí gần đúng suy ra từ IP và dữ liệu chẩn đoán để phân phối, đo lường, bảo vệ quảng cáo, chống gian lận và – khi bạn đồng ý – cá nhân hóa quảng cáo.</p>
 <ul>

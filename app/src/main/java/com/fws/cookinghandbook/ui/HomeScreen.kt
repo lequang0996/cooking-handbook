@@ -161,7 +161,7 @@ fun HomeScreen(vm: AppViewModel, onDish: (String) -> Unit, onCategory: (String) 
 
 @Composable
 private fun FeaturedCard(dish: Dish, onClick: () -> Unit) {
-    val title = rememberTranslated(dish.title)
+    val title = rememberTranslatedTitle(dish.title)
     val intro = rememberTranslated(dish.intro)
     Box(
         Modifier.fillMaxWidth().height(224.dp).clip(RoundedCornerShape(28.dp)).background(HeroBrush)
@@ -187,7 +187,7 @@ private fun FeaturedCard(dish: Dish, onClick: () -> Unit) {
                 Text(intro, color = Color.White.copy(alpha = 0.78f), style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Stars(dish.difficulty, tint = Gold)
+                Difficulty(dish.difficulty, dotColor = Gold, textColor = Color.White.copy(alpha = 0.85f))
                 dish.calories?.let {
                     Text("  ·  " + stringResource(R.string.kcal_unit, it), color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodyMedium)
                 }

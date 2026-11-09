@@ -11,7 +11,7 @@ import androidx.work.WorkerParameters
 import com.fws.cookinghandbook.CookApp
 import java.util.concurrent.TimeUnit
 
-/** Background check for new/changed dishes, roughly twice a day, only with a network connection. */
+/** Background check for new/changed dishes, once a day, only with a network connection. */
 class SyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val app = applicationContext as CookApp
@@ -22,11 +22,11 @@ class SyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, 
 
     companion object {
         fun schedule(context: Context) {
-            val req = PeriodicWorkRequestBuilder<SyncWorker>(12, TimeUnit.HOURS)
+            val req = PeriodicWorkRequestBuilder<SyncWorker>(24, TimeUnit.HOURS)
                 .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .build()
             WorkManager.getInstance(context)
-                .enqueueUniquePeriodicWork("dish-sync", ExistingPeriodicWorkPolicy.KEEP, req)
+                .enqueueUniquePeriodicWork("dish-sync", ExistingPeriodicWorkPolicy.UPDATE, req)
         }
     }
 }

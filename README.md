@@ -19,7 +19,7 @@ Cooking Handbook: Nấu ăn
 Sổ tay nấu ăn: hơn 370 món, đọc to, yêu thích, tự động cập nhật.
 ```
 
-**Mô tả đầy đủ** (2757/4000)
+**Mô tả đầy đủ** (2773/4000)
 
 ```
 Cooking Handbook là cuốn sổ tay nấu ăn tinh tế dành cho người nấu ăn tại nhà. Hơn 370 công thức rõ ràng, từng bước một, chia thành mười chủ đề; tìm món chỉ trong vài giây, nghe đọc các bước khi tay đang bận và lưu món yêu thích để mở lại bằng một chạm.
@@ -29,7 +29,7 @@ TÍNH NĂNG
 • Gợi ý hôm nay – thanh trượt gồm mười chủ đề. Mỗi chủ đề hiển thị ngẫu nhiên một món và đổi mới sau mỗi 5 phút. Đồng hồ vẫn chạy kể cả khi bạn đã tắt ứng dụng, nên mỗi lần quay lại luôn có món mới để thử.
 • Chủ đề xếp theo mức độ phổ biến – Hải sản, Bữa sáng, Gia vị, Món tráng miệng, Đồ uống, Món thịt, Thực phẩm bán thành phẩm, Canh, Thức ăn chính và Món rau củ; mỗi chủ đề có biểu tượng riêng và số lượng món ở bên phải. Chủ đề nhiều món nhất đứng đầu.
 • Tìm kiếm nhanh – gõ tên món hoặc nguyên liệu. Gõ bằng ngôn ngữ của bạn cũng tìm được.
-• Trang công thức gọn gàng – phần giới thiệu ngắn kèm ngày cập nhật mới nhất, xếp hạng độ khó và calo ước tính, một danh sách gộp nguyên liệu – dụng cụ – định lượng, cùng các bước thực hiện được đánh số. Không có gì làm bạn xao nhãng.
+• Trang công thức gọn gàng – phần giới thiệu ngắn kèm ngày cập nhật mới nhất, mức độ khó và calo ước tính, ảnh món ăn (nếu có), một danh sách gộp nguyên liệu – dụng cụ – định lượng, cùng các bước thực hiện được đánh số. Không có gì làm bạn xao nhãng.
 • Đọc to – chạm nút để nghe đọc công thức. Chạm vào bất kỳ bước nào để đọc từ đó; bước đang đọc được làm nổi bật.
 • Yêu thích – chạm biểu tượng trái tim ở bất kỳ món nào và xem lại trong thẻ Yêu thích.
 • Dịch ngay trên thiết bị – kho công thức gốc bằng tiếng Trung. Bật dịch để đọc bằng tiếng Việt, tiếng Anh, Tây Ban Nha, Bồ Đào Nha, Nga, Nhật, Hàn hoặc Trung giản thể. Bản dịch chạy trên điện thoại sau khi tải gói ngôn ngữ một lần (khoảng 30 MB).
@@ -66,7 +66,7 @@ Cooking Handbook: Recipes
 Home-cooking handbook: 370+ recipes, read aloud, favorites, auto-updated.
 ```
 
-**Full description** (2894/4000)
+**Full description** (2928/4000)
 
 ```
 Cooking Handbook is an elegant recipe companion for everyday home cooks. Browse more than 370 clear, step-by-step recipes across ten topics, find a dish in seconds, listen to the steps while your hands are busy, and keep your favorites one tap away.
@@ -76,7 +76,7 @@ WHAT YOU GET
 • Today's picks – a slider with ten topics. Each topic shows one random dish, and the pick changes every 5 minutes. The timer keeps counting even when the app is closed, so every time you come back there is something new to try.
 • Topics sorted by popularity – Seafood, Breakfast, Condiments, Desserts, Drinks, Meat dishes, Semi-finished foods, Soups, Staple foods and Vegetable dishes, each with a clean icon and the number of recipes on the right. The topics with the most recipes come first.
 • Fast search – type a dish or an ingredient. Searching in your own language works too.
-• Focused recipe pages – a short introduction with the date the recipe was last updated, a difficulty rating and estimated calories, one merged list of ingredients, tools and quantities, and numbered cooking steps. Nothing else gets in your way.
+• Focused recipe pages – a short introduction with the date the recipe was last updated, a difficulty level and estimated calories, photos of the dish when available, one merged list of ingredients, tools and quantities, and numbered cooking steps. Nothing else gets in your way.
 • Read aloud – tap the button and the recipe is read to you. Tap any step to start from there. The step being read is highlighted.
 • Favorites – tap the heart on any recipe and find it later in the Favorites tab.
 • Translate on your device – the recipe collection is written in Chinese. Turn on translation and read it in English, Spanish, Portuguese, Russian, Japanese, Korean, Vietnamese or Simplified Chinese. Translation runs on your phone after a one-time language pack download (about 30 MB).

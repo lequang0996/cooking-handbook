@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  * On-device translation (ML Kit) with a persistent cache, so each sentence is translated only once.
  * Codes are ML Kit language codes: zh, en, es, pt, ru, ja, ko, vi.
  */
-class TranslationManager(context: Context) {
+class TranslationManager(private val context: Context) {
     private val file = File(context.filesDir, "translation_cache.json")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val mem = ConcurrentHashMap<String, String>()
@@ -39,7 +39,33 @@ class TranslationManager(context: Context) {
         }
     }
 
-    private fun key(text: String, src: String, dst: String) = "$src>$dst:${text.hashCode()}:${text.length}"
+    private fun key(text: String, src: String, dst: String) = "v2|$src>$dst:${text.hashCode()}:${text.length}"
+
+    // ---- hand-written dish titles (assets/titles.json): exact English and Vietnamese names ----
+    private val glossary: Map<String, Map<String, String>> by lazy {
+        runCatching {
+            val o = JSONObject(context.assets.open("titles.json").bufferedReader(Charsets.UTF_8).use { it.readText() })
+            o.keys().asSequence().associateWith { k -> o.getJSONObject(k).let { g -> g.keys().asSequence().associateWith { g.getString(it) } } }
+        }.getOrDefault(emptyMap())
+    }
+
+    /** Title for [dst] if it is available without any model download (curated en/vi, or already cached). */
+    fun titleCached(zh: String, dst: String): String? {
+        if (dst == "zh") return zh
+        val g = glossary[zh]
+        if (g != null) {
+            g[dst]?.let { return it }
+            g["en"]?.let { en -> return cached(en, "en", dst) }
+        }
+        return cached(zh, "zh", dst)
+    }
+
+    /** Dish title in [dst]: curated for en/vi; other languages translate the curated English title (better than zh→xx). */
+    suspend fun title(zh: String, dst: String): String? {
+        titleCached(zh, dst)?.let { return it }
+        val en = glossary[zh]?.get("en")
+        return if (en != null) translate(en, "en", dst) else translate(zh, "zh", dst)
+    }
 
     fun cached(text: String, src: String, dst: String): String? = mem[key(text, src, dst)]
 

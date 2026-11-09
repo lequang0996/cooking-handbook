@@ -8,8 +8,10 @@ plugins {
 // (see docs/SETUP.md) so no private id is ever committed.
 val testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
 val testBannerId = "ca-app-pub-3940256099942544/9214589741"
+val testAppOpenId = "ca-app-pub-3940256099942544/9257395921"
 
 val releaseAdmobAppId = System.getenv("ADMOB_APP_ID")?.takeIf { it.isNotBlank() } ?: testAdmobAppId
+val releaseAppOpenId = System.getenv("ADMOB_APP_OPEN_ID")?.takeIf { it.isNotBlank() } ?: testAppOpenId
 val releaseBannerId = System.getenv("ADMOB_BANNER_ID")?.takeIf { it.isNotBlank() } ?: testBannerId
 
 val repoSlug = System.getenv("GITHUB_REPOSITORY") // "owner/repo" inside GitHub Actions
@@ -29,6 +31,7 @@ android {
         versionName = "1.0.0"
         manifestPlaceholders["admobAppId"] = testAdmobAppId
         buildConfigField("String", "ADMOB_BANNER_ID", "\"$testBannerId\"")
+        buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"$testAppOpenId\"")
         buildConfigField("String", "PRIVACY_URL", "\"$privacyUrl\"")
     }
 
@@ -52,6 +55,9 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             manifestPlaceholders["admobAppId"] = releaseAdmobAppId
             buildConfigField("String", "ADMOB_BANNER_ID", "\"$releaseBannerId\"")
+            buildConfigField("String", "ADMOB_APP_OPEN_ID", "\"$releaseAppOpenId\"")
+            // phones only: x86 images are for emulators and would add several MB of native code
+            ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
             // Without a real keystore the APK is signed with the debug key (testing only, not for Play).
             signingConfig = if (hasKeystore) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }

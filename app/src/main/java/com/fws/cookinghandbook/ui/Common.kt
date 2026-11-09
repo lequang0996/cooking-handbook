@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,9 +28,7 @@ import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Opacity
 import androidx.compose.material.icons.outlined.SetMeal
 import androidx.compose.material.icons.outlined.SoupKitchen
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.WbTwilight
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -75,6 +74,18 @@ fun rememberTranslated(text: String): String {
     return if (active) out else text
 }
 
+/** Dish title with the curated/translated name when translation is on. */
+@Composable
+fun rememberTranslatedTitle(zh: String): String {
+    val tr = LocalTr.current
+    val active = tr != null && tr.enabled
+    var out by remember(zh, tr?.key) { mutableStateOf(if (active) tr!!.mgr.titleCached(zh, tr.target) ?: zh else zh) }
+    LaunchedEffect(zh, tr?.key) {
+        if (active && out == zh) tr!!.mgr.title(zh, tr.target)?.let { out = it }
+    }
+    return if (active) out else zh
+}
+
 fun Context.findActivity(): Activity? {
     var c: Context? = this
     while (c is ContextWrapper) { if (c is Activity) return c; c = c.baseContext }
@@ -97,13 +108,23 @@ fun categoryIcon(id: String): ImageVector = when (id) {
 @Composable
 fun categoryName(id: String): String = Categories.find(id)?.let { stringResource(it.nameRes) } ?: id
 
+/** Difficulty as "Difficulty 4/5 ●●●●○" (dots, not stars, so it is not mistaken for a rating). */
 @Composable
-fun Stars(count: Int, modifier: Modifier = Modifier, tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.secondary) {
-    Row(modifier) {
+fun Difficulty(
+    level: Int, modifier: Modifier = Modifier, withLabel: Boolean = true,
+    dotColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.secondary,
+    textColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            if (withLabel) stringResource(R.string.difficulty_value, level) else "$level/5",
+            style = MaterialTheme.typography.bodyMedium, color = textColor,
+        )
+        Spacer(Modifier.width(6.dp))
         for (i in 1..5) {
-            Icon(
-                if (i <= count) Icons.Filled.Star else Icons.Outlined.StarBorder, null,
-                tint = if (i <= count) tint else tint.copy(alpha = 0.35f), modifier = Modifier.size(16.dp),
+            Box(
+                Modifier.padding(horizontal = 1.5.dp).size(8.dp).clip(CircleShape)
+                    .then(if (i <= level) Modifier.background(dotColor) else Modifier.border(1.dp, dotColor.copy(alpha = 0.55f), CircleShape))
             )
         }
     }
@@ -138,7 +159,7 @@ fun ElegantCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, co
 
 @Composable
 fun DishRow(dish: Dish, favorite: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val title = rememberTranslated(dish.title)
+    val title = rememberTranslatedTitle(dish.title)
     ElegantCard(modifier.fillMaxWidth(), onClick) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(dish.categoryId))
@@ -147,7 +168,7 @@ fun DishRow(dish: Dish, favorite: Boolean, onClick: () -> Unit, modifier: Modifi
                 Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.size(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Stars(dish.difficulty)
+                    Difficulty(dish.difficulty)
                     dish.calories?.let {
                         Text(
                             "  ·  " + stringResource(R.string.kcal_unit, it),

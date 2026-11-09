@@ -3,7 +3,6 @@
     <string name="app_name">Cooking Handbook</string>
     <string name="tab_home">Home</string>
     <string name="tab_favorites">Favorites</string>
-    <string name="tab_guide">Guide</string>
     <string name="tab_settings">Settings</string>
     <string name="home_tagline">A handbook of home cooking</string>
     <string name="search_hint">Search dishes or ingredients</string>
@@ -43,22 +42,10 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="settings_translate">Translate recipes</string>
-    <string name="settings_translate_desc">Recipes are written in Chinese. Translation runs on your device (language pack ≈ 30 MB, downloaded once).</string>
+    <string name="settings_translate_desc">Recipes are written in Chinese. Translation runs on your device using Google language packs (about 30 MB each for Chinese and your language, downloaded once).</string>
     <string name="settings_tts_speed">Reading speed</string>
-    <string name="settings_sync">Recipe updates</string>
-    <string name="sync_desc">New dishes and edits are fetched from GitHub automatically.</string>
-    <string name="sync_now">Check now</string>
-    <string name="syncing">Checking…</string>
-    <string name="sync_done">%1$d dishes added or updated</string>
-    <string name="sync_none">Already up to date</string>
-    <string name="sync_failed">Couldn\'t reach GitHub. Try again later.</string>
-    <string name="last_sync">Last checked: %1$s</string>
-    <string name="sync_never">Never</string>
     <string name="settings_privacy">Privacy Policy</string>
     <string name="settings_ad_privacy">Ad privacy settings</string>
-    <string name="about_title">About</string>
-    <string name="about_body">Recipes come from the open-source project HowToCook by Anduin2017 and contributors (Unlicense). Calorie figures are rough estimates. This app is not affiliated with that project.</string>
-    <string name="version_label">Version %1$s</string>
     <string name="update_ready">A new version has been downloaded.</string>
     <string name="update_restart">Restart</string>
     <string name="guide_title">How to use</string>
@@ -74,4 +61,9 @@
     <string name="guide_b5">Tap the heart on a dish to save it. All saved dishes are in the Favorites tab.</string>
     <string name="guide_t6">Translation and updates</string>
     <string name="guide_b6">Recipes are written in Chinese; keep translation on in Settings to read them in your language. New dishes and edits on GitHub are added automatically.</string>
+    <string name="difficulty_value">Difficulty %1$d/5</string>
+    <string name="tr_dialog_title">Translate recipes?</string>
+    <string name="tr_dialog_body">Recipes are written in Chinese. To translate them on your device, Google language packs (about 30 MB each, for Chinese and your language) are downloaded once. Wi-Fi is recommended. You can change this later in Settings.</string>
+    <string name="tr_dialog_yes">Download and translate</string>
+    <string name="tr_dialog_no">Not now</string>
 </resources>

@@ -3,7 +3,6 @@
     <string name="app_name">Cooking Handbook</string>
     <string name="tab_home">Главная</string>
     <string name="tab_favorites">Избранное</string>
-    <string name="tab_guide">Помощь</string>
     <string name="tab_settings">Настройки</string>
     <string name="home_tagline">Справочник домашней кухни</string>
     <string name="search_hint">Поиск блюд и ингредиентов</string>
@@ -43,22 +42,10 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="settings_translate">Переводить рецепты</string>
-    <string name="settings_translate_desc">Рецепты написаны на китайском. Перевод выполняется на устройстве (языковой пакет ≈ 30 МБ, скачивается один раз).</string>
+    <string name="settings_translate_desc">Рецепты написаны на китайском. Перевод выполняется на устройстве с помощью языковых пакетов Google (около 30 МБ каждый — китайский и ваш язык, скачиваются один раз).</string>
     <string name="settings_tts_speed">Скорость чтения</string>
-    <string name="settings_sync">Обновление рецептов</string>
-    <string name="sync_desc">Новые блюда и правки загружаются с GitHub автоматически.</string>
-    <string name="sync_now">Проверить</string>
-    <string name="syncing">Проверка…</string>
-    <string name="sync_done">Добавлено или обновлено блюд: %1$d</string>
-    <string name="sync_none">Уже актуально</string>
-    <string name="sync_failed">Не удалось связаться с GitHub. Повторите позже.</string>
-    <string name="last_sync">Последняя проверка: %1$s</string>
-    <string name="sync_never">Никогда</string>
     <string name="settings_privacy">Политика конфиденциальности</string>
     <string name="settings_ad_privacy">Настройки конфиденциальности рекламы</string>
-    <string name="about_title">О приложении</string>
-    <string name="about_body">Рецепты взяты из проекта с открытым кодом HowToCook (Anduin2017 и участники, Unlicense). Калории указаны приблизительно. Приложение не связано с этим проектом.</string>
-    <string name="version_label">Версия %1$s</string>
     <string name="update_ready">Новая версия загружена.</string>
     <string name="update_restart">Перезапустить</string>
     <string name="guide_title">Как пользоваться</string>
@@ -74,4 +61,9 @@
     <string name="guide_b5">Нажмите на сердечко у блюда, чтобы сохранить его. Все сохранённые — во вкладке «Избранное».</string>
     <string name="guide_t6">Перевод и обновления</string>
     <string name="guide_b6">Рецепты на китайском; включите перевод в настройках, чтобы читать на своём языке. Новые блюда и правки с GitHub добавляются автоматически.</string>
+    <string name="difficulty_value">Сложность %1$d/5</string>
+    <string name="tr_dialog_title">Переводить рецепты?</string>
+    <string name="tr_dialog_body">Рецепты написаны на китайском. Чтобы переводить их на устройстве, один раз скачиваются языковые пакеты Google (около 30 МБ каждый: китайский и ваш язык). Рекомендуется Wi-Fi. Это можно изменить в настройках.</string>
+    <string name="tr_dialog_yes">Скачать и переводить</string>
+    <string name="tr_dialog_no">Не сейчас</string>
 </resources>

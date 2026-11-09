@@ -18,7 +18,7 @@ class Prefs(context: Context) {
     val translate: StateFlow<Boolean?> = _translate
     fun setTranslate(v: Boolean) { sp.edit().putBoolean("translate", v).apply(); _translate.value = v }
 
-    private val _ttsRate = MutableStateFlow(sp.getFloat("tts_rate", 1.0f))
+    private val _ttsRate = MutableStateFlow(sp.getFloat("tts_rate", 2.0f))
     val ttsRate: StateFlow<Float> = _ttsRate
     fun setTtsRate(v: Float) { sp.edit().putFloat("tts_rate", v).apply(); _ttsRate.value = v }
 

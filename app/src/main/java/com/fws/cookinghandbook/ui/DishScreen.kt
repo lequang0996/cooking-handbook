@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,12 +25,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +59,7 @@ import com.fws.cookinghandbook.AppViewModel
 import com.fws.cookinghandbook.R
 import com.fws.cookinghandbook.data.Dish
 import com.fws.cookinghandbook.util.Lang
+import com.fws.cookinghandbook.util.RemoteImage
 import java.text.DateFormat
 import java.util.Date
 
@@ -67,18 +70,23 @@ private data class DishText(
 
 private fun Dish.asText() = DishText(title, intro, ingredients, servingNote, quantities, steps)
 
+private val sentenceSplit = Regex("(?<=[。；！？])")
+
 /** Translates every piece of the recipe; the flag is false if any piece could not be translated. */
 private suspend fun translateDish(tr: Tr, d: Dish): Pair<DishText, Boolean> {
     var ok = true
+    // sentence by sentence: the offline model is much more accurate on short inputs
     suspend fun t(s: String): String {
         if (s.isBlank()) return s
-        val out = s.split("\n").map { line ->
-            if (line.isBlank()) line else tr.mgr.translate(line, "zh", tr.target) ?: run { ok = false; line }
+        return s.split("\n").joinToString("\n") { line ->
+            if (line.isBlank()) line else line.split(sentenceSplit).filter { it.isNotBlank() }.joinToString(" ") { sentence ->
+                tr.mgr.translate(sentence.trim(), "zh", tr.target) ?: run { ok = false; sentence }
+            }
         }
-        return out.joinToString("\n")
     }
+    val title = tr.mgr.title(d.title, tr.target) ?: run { ok = false; d.title }
     val text = DishText(
-        t(d.title), t(d.intro), d.ingredients.map { t(it) }, t(d.servingNote),
+        title, t(d.intro), d.ingredients.map { t(it) }, t(d.servingNote),
         d.quantities.map { t(it) }, d.steps.map { t(it) },
     )
     return text to ok
@@ -94,7 +102,7 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
     if (dish == null) { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)); return }
 
     val tr = LocalTr.current
-    var content by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(dish.asText()) }
+    var content by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(dish.asText().let { base -> if (tr != null && tr.enabled) tr.mgr.titleCached(dish.title, tr.target)?.let { base.copy(title = it) } ?: base else base }) }
     var contentLang by remember(dish.path, dish.sha, tr?.key) { mutableStateOf("zh") }
     var translating by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
     var translateFailed by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
@@ -141,6 +149,13 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
                 title = { Text(categoryName(dish.categoryId), style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) } },
                 actions = {
+                    IconButton({ if (speaking) tts.stop() else play(0) }) {
+                        Icon(
+                            if (speaking) Icons.Filled.StopCircle else Icons.AutoMirrored.Filled.VolumeUp,
+                            stringResource(if (speaking) R.string.tts_stop else R.string.tts_play),
+                            tint = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                     IconButton({ vm.prefs.toggleFavorite(dish.path) }) {
                         Icon(
                             if (isFav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -152,19 +167,24 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { if (speaking) tts.stop() else play(0) },
-                containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary,
-                icon = { Icon(if (speaking) Icons.Filled.Stop else Icons.Filled.PlayArrow, null) },
-                text = { Text(stringResource(if (speaking) R.string.tts_stop else R.string.tts_play)) },
-            )
-        },
     ) { pad ->
         Column(
             Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            // photos referenced by the recipe (downloaded on demand from GitHub)
+            if (dish.images.isNotEmpty()) {
+                val pager = rememberPagerState { dish.images.size }
+                Box(Modifier.fillMaxWidth().aspectRatio(1.4f).clip(RoundedCornerShape(24.dp))) {
+                    HorizontalPager(pager, Modifier.fillMaxSize()) { i -> RemoteImage(dish.images[i], Modifier.fillMaxSize()) }
+                    if (dish.images.size > 1) Text(
+                        "${pager.currentPage + 1}/${dish.images.size}", color = androidx.compose.ui.graphics.Color.White,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp).clip(RoundedCornerShape(50))
+                            .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.5f)).padding(horizontal = 10.dp, vertical = 3.dp),
+                    )
+                }
+            }
             // header
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(HeroBrush).padding(20.dp)) {
                 Text(content.title, color = androidx.compose.ui.graphics.Color.White, style = MaterialTheme.typography.headlineMedium)
@@ -188,7 +208,7 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.dish_difficulty), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(4.dp))
-                        Stars(dish.difficulty)
+                        Difficulty(dish.difficulty, withLabel = false)
                     }
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.dish_calories), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -242,7 +262,7 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
                     }
                 }
             }
-            Spacer(Modifier.height(88.dp)) // room for the floating button
+            Spacer(Modifier.height(24.dp))
         }
     }
 }

@@ -11,6 +11,25 @@ object DishParser {
     private val linkRe = Regex("""\[([^\]]*)]\([^)]*\)""")
     private val htmlRe = Regex("""<[^>]+>""")
 
+    private val imageRefRe = Regex("""!\[[^\]]*]\(\s*<?([^)\s>]+)>?[^)]*\)""")
+    private val imageExt = setOf("jpg", "jpeg", "png", "webp", "gif")
+    private const val RAW_BASE = "https://raw.githubusercontent.com/Anduin2017/HowToCook/master/"
+
+    private fun enc(seg: String) = java.net.URLEncoder.encode(seg, "UTF-8").replace("+", "%20")
+
+    /** Resolves an image reference of a markdown file (relative or absolute) to a downloadable URL. */
+    fun imageUrl(mdPath: String, ref: String): String? {
+        if (ref.substringAfterLast('.', "").lowercase() !in imageExt) return null
+        if (ref.startsWith("http://") || ref.startsWith("https://")) return ref
+        val out = ArrayList(mdPath.split("/").dropLast(1))
+        for (seg in ref.split("/")) when (seg) {
+            "", "." -> Unit
+            ".." -> if (out.isNotEmpty()) out.removeAt(out.lastIndex)
+            else -> out += seg
+        }
+        return RAW_BASE + out.joinToString("/") { enc(java.net.URLDecoder.decode(it.replace("+", "%2B"), "UTF-8")) }
+    }
+
     private enum class Section { NONE, ING, CALC, STEPS, OTHER }
 
     fun clean(s: String): String = s
@@ -80,11 +99,12 @@ object DishParser {
             }
         }
         if (steps.isEmpty() && ingredients.isEmpty()) return null
+        val images = imageRefRe.findAll(raw.markdown).mapNotNull { imageUrl(raw.path, it.groupValues[1]) }.distinct().take(8).toList()
         return Dish(
             path = raw.path, categoryId = categoryId, title = title, intro = intro.toString(),
             difficulty = difficulty.coerceIn(0, 5), calories = calories,
             ingredients = ingredients, servingNote = notes.joinToString(" "), quantities = quantities,
-            steps = steps, updatedAt = raw.updatedAt, sha = raw.sha,
+            steps = steps, images = images, updatedAt = raw.updatedAt, sha = raw.sha,
         )
     }
 }
