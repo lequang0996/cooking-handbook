@@ -1,0 +1,257 @@
+package com.fws.cookinghandbook.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
+import com.fws.cookinghandbook.AppViewModel
+import com.fws.cookinghandbook.R
+import com.fws.cookinghandbook.data.Dish
+import com.fws.cookinghandbook.util.Lang
+import java.text.DateFormat
+import java.util.Date
+
+private data class DishText(
+    val title: String, val intro: String, val ingredients: List<String>,
+    val servingNote: String, val quantities: List<String>, val steps: List<String>,
+)
+
+private fun Dish.asText() = DishText(title, intro, ingredients, servingNote, quantities, steps)
+
+/** Translates every piece of the recipe; the flag is false if any piece could not be translated. */
+private suspend fun translateDish(tr: Tr, d: Dish): Pair<DishText, Boolean> {
+    var ok = true
+    suspend fun t(s: String): String {
+        if (s.isBlank()) return s
+        val out = s.split("\n").map { line ->
+            if (line.isBlank()) line else tr.mgr.translate(line, "zh", tr.target) ?: run { ok = false; line }
+        }
+        return out.joinToString("\n")
+    }
+    val text = DishText(
+        t(d.title), t(d.intro), d.ingredients.map { t(it) }, t(d.servingNote),
+        d.quantities.map { t(it) }, d.steps.map { t(it) },
+    )
+    return text to ok
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
+    val dishes by vm.dishes.collectAsState()
+    val favorites by vm.prefs.favorites.collectAsState()
+    val rate by vm.prefs.ttsRate.collectAsState()
+    val dish = dishes.firstOrNull { it.path == path }
+    if (dish == null) { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)); return }
+
+    val tr = LocalTr.current
+    var content by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(dish.asText()) }
+    var contentLang by remember(dish.path, dish.sha, tr?.key) { mutableStateOf("zh") }
+    var translating by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
+    var translateFailed by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
+    LaunchedEffect(dish.path, dish.sha, tr?.key) {
+        if (tr != null && tr.enabled) {
+            translating = true
+            val (text, ok) = translateDish(tr, dish)
+            translating = false
+            if (ok) { content = text; contentLang = tr.target; translateFailed = false } else translateFailed = true
+        }
+    }
+
+    val tts = vm.tts
+    val speaking by tts.speaking.collectAsState()
+    val current by tts.current.collectAsState()
+    val missingVoice by tts.missingVoice.collectAsState()
+    val snackbar = remember { SnackbarHostState() }
+    val missingMsg = stringResource(R.string.tts_missing)
+    LaunchedEffect(missingVoice) { if (missingVoice) { snackbar.showSnackbar(missingMsg); tts.clearMissingVoice() } }
+    DisposableEffect(Unit) { onDispose { tts.stop() } }
+
+    // everything that is read aloud, in order; steps start at stepOffset
+    val chunks = remember(content) {
+        buildList {
+            add(content.title); add(content.intro)
+            addAll(content.ingredients); add(content.servingNote); addAll(content.quantities)
+        } to content.steps
+    }
+    val stepOffset = chunks.first.size
+    val allChunks = chunks.first + chunks.second
+    fun play(from: Int) = tts.speak(allChunks, from, Lang.ttsLocale(contentLang), rate)
+    val currentStep = (current - stepOffset).takeIf { speaking && it >= 0 }
+
+    val locale = LocalConfiguration.current.locales[0]
+    val dateText = remember(dish.updatedAt, locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(dish.updatedAt)) }
+    val isFav = dish.path in favorites
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbar) },
+        topBar = {
+            TopAppBar(
+                title = { Text(categoryName(dish.categoryId), style = MaterialTheme.typography.titleMedium) },
+                navigationIcon = { IconButton(onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) } },
+                actions = {
+                    IconButton({ vm.prefs.toggleFavorite(dish.path) }) {
+                        Icon(
+                            if (isFav) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            stringResource(if (isFav) R.string.fav_remove else R.string.fav_add),
+                            tint = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { if (speaking) tts.stop() else play(0) },
+                containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary,
+                icon = { Icon(if (speaking) Icons.Filled.Stop else Icons.Filled.PlayArrow, null) },
+                text = { Text(stringResource(if (speaking) R.string.tts_stop else R.string.tts_play)) },
+            )
+        },
+    ) { pad ->
+        Column(
+            Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            // header
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(HeroBrush).padding(20.dp)) {
+                Text(content.title, color = androidx.compose.ui.graphics.Color.White, style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(6.dp))
+                Text(stringResource(R.string.dish_updated, dateText), color = Gold, style = MaterialTheme.typography.labelLarge)
+                if (content.intro.isNotBlank()) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(content.intro, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            if (translating) Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.tr_pending), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (translateFailed) Text(stringResource(R.string.tr_unavailable), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            // rating: difficulty + estimated calories
+            ElegantCard(Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.dish_difficulty), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(4.dp))
+                        Stars(dish.difficulty)
+                    }
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.dish_calories), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(4.dp))
+                        Text(dish.calories?.let { stringResource(R.string.kcal_unit, it) } ?: "—", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+
+            // merged ingredients + tools + quantities
+            ElegantCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.dish_ingredients), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(8.dp))
+                    content.ingredients.forEach { BulletLine(it) }
+                    if (content.servingNote.isNotBlank() || content.quantities.isNotEmpty()) {
+                        HorizontalDivider(Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        if (content.servingNote.isNotBlank()) {
+                            Text(content.servingNote, style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.height(6.dp))
+                        }
+                        content.quantities.forEach { BulletLine(it) }
+                    }
+                }
+            }
+
+            // steps
+            ElegantCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.dish_steps), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(8.dp))
+                    content.steps.forEachIndexed { i, s ->
+                        val active = currentStep == i
+                        Row(
+                            Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(14.dp))
+                                .background(if (active) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent)
+                                .clickable { play(stepOffset + i) }.padding(8.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Box(
+                                Modifier.size(26.dp).clip(CircleShape)
+                                    .background(if (active) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("${i + 1}", style = MaterialTheme.typography.labelLarge,
+                                    color = if (active) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Text(s, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(88.dp)) // room for the floating button
+        }
+    }
+}
+
+@Composable
+private fun BulletLine(text: String) {
+    Row(Modifier.padding(vertical = 2.dp)) {
+        Text("•", color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.width(10.dp))
+        Text(text, style = MaterialTheme.typography.bodyLarge)
+    }
+}
