@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.fws.cookinghandbook.data.Categories
 import com.fws.cookinghandbook.data.Dish
 import com.fws.cookinghandbook.util.Lang
-import com.fws.cookinghandbook.util.TranslationManager
 import com.fws.cookinghandbook.util.TtsController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val prefs = cook.prefs
     val repository = cook.repository
     val dishes: StateFlow<List<Dish>> = repository.dishes
-    val translations by lazy { TranslationManager(app) }
+    val translations = cook.translations
     private val ttsLazy = lazy { TtsController(app) }
     val tts: TtsController get() = ttsLazy.value
 
@@ -33,6 +32,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             repository.load()
             ensureFeatured()
+            translations.resumePending(dishes.value)
             syncIfDue()
             // keeps the slider fresh while the app stays open
             while (true) {
@@ -66,22 +66,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _featured.value = next
     }
 
+    init {
+        // a key was added in Settings: translate everything that was waiting for one
+        viewModelScope.launch {
+            prefs.apiKeys.collect { if (it.isNotEmpty()) translations.resumePending(dishes.value) }
+        }
+    }
+
     /** Background WorkManager checks once a day; this is only a fallback if that run was delayed (e.g. battery saver). */
     private suspend fun syncIfDue() {
         if (System.currentTimeMillis() - prefs.lastSync < DAY_MS) return
-        if (repository.sync().changed > 0) ensureFeatured()
+        val r = repository.sync()
+        if (r.changed > 0) {
+            ensureFeatured()
+            translations.markChanged(r.changedPaths)
+            translations.resumePending(dishes.value)
+        }
     }
 
-    /** Dishes matching [query] in the source text, the cached translation, or the query translated to Chinese. */
-    fun search(query: String, queryInChinese: String?): List<Dish> {
+    /** Dishes matching [query] in the Chinese source or in the user's language (translated title and ingredients). */
+    fun search(query: String): List<Dish> {
         val q = query.trim().lowercase()
         if (q.isEmpty()) return emptyList()
         val lang = Lang.current(getApplication())
-        val zhQ = queryInChinese?.trim()?.takeIf { it.isNotEmpty() }
         return dishes.value.filter { d ->
             d.title.contains(q, true) || d.ingredients.any { it.contains(q, true) } ||
-                (zhQ != null && (d.title.contains(zhQ) || d.ingredients.any { it.contains(zhQ) })) ||
-                (lang != "zh" && translations.titleCached(d.title, lang)?.lowercase()?.contains(q) == true)
+                translations.searchText(d, lang)?.contains(q) == true
         }
     }
 

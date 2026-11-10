@@ -30,7 +30,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,28 +50,17 @@ import com.fws.cookinghandbook.AppViewModel
 import com.fws.cookinghandbook.R
 import com.fws.cookinghandbook.data.Categories
 import com.fws.cookinghandbook.data.Dish
-import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(vm: AppViewModel, onDish: (String) -> Unit, onCategory: (String) -> Unit) {
     val dishes by vm.dishes.collectAsState()
     val featured by vm.featured.collectAsState()
     val favorites by vm.prefs.favorites.collectAsState()
-    val tr = LocalTr.current
+    val translations = vm.translations
+    val trVersion by translations.version.collectAsState()
     var query by rememberSaveable { mutableStateOf("") }
-    var results by remember { mutableStateOf<List<Dish>>(emptyList()) }
-
-    // Debounced search; a non-Chinese query is also translated to Chinese so recipes can be found in any language.
-    LaunchedEffect(query, dishes, tr?.key) {
-        if (query.isBlank()) { results = emptyList(); return@LaunchedEffect }
-        results = vm.search(query, null)
-        delay(450)
-        val hasCjk = query.any { it.code in 0x4E00..0x9FFF }
-        if (!hasCjk && tr != null && tr.enabled) {
-            val zh = tr.mgr.translate(query.trim(), tr.target, "zh")
-            if (zh != null) results = vm.search(query, zh)
-        }
-    }
+    // searches the Chinese source and, in other languages, the translated title and ingredients
+    val results = remember(query, dishes, trVersion) { if (query.isBlank()) emptyList() else vm.search(query) }
 
     // categories sorted by popularity = number of dishes
     val counts = remember(dishes) { dishes.groupingBy { it.categoryId }.eachCount() }
@@ -161,8 +149,8 @@ fun HomeScreen(vm: AppViewModel, onDish: (String) -> Unit, onCategory: (String) 
 
 @Composable
 private fun FeaturedCard(dish: Dish, onClick: () -> Unit) {
-    val title = rememberTranslatedTitle(dish.title)
-    val intro = rememberTranslated(dish.intro)
+    val title = rememberTitle(dish)
+    val intro = rememberIntro(dish)
     Box(
         Modifier.fillMaxWidth().height(224.dp).clip(RoundedCornerShape(28.dp)).background(HeroBrush)
             .drawBehind {

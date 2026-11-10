@@ -35,11 +35,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,37 +51,25 @@ import com.fws.cookinghandbook.data.Categories
 import com.fws.cookinghandbook.data.Dish
 import com.fws.cookinghandbook.util.TranslationManager
 
-/** Translation settings visible to every composable. */
-class Tr(val enabled: Boolean, val target: String, val mgr: TranslationManager) {
-    val key = "$enabled-$target"
-}
+/** Gives every composable the translation manager and the language the UI is showing. */
+class Tr(val mgr: TranslationManager, val lang: String)
 
 val LocalTr = staticCompositionLocalOf<Tr?> { null }
 
-/** Shows the cached translation immediately, otherwise the original, then swaps in the fresh translation. */
+/** Dish title in the UI language (curated or translated name; the Chinese title until one exists). */
 @Composable
-fun rememberTranslated(text: String): String {
-    val tr = LocalTr.current
-    val active = tr != null && tr.enabled
-    var out by remember(text, tr?.key) {
-        mutableStateOf(if (active) tr!!.mgr.cached(text, "zh", tr.target) ?: text else text)
-    }
-    LaunchedEffect(text, tr?.key) {
-        if (active && out == text) tr!!.mgr.translate(text, "zh", tr.target)?.let { out = it }
-    }
-    return if (active) out else text
+fun rememberTitle(dish: Dish): String {
+    val tr = LocalTr.current ?: return dish.title
+    val version by tr.mgr.version.collectAsState()
+    return remember(dish.path, dish.sha, tr.lang, version) { tr.mgr.title(dish, tr.lang) }
 }
 
-/** Dish title with the curated/translated name when translation is on. */
+/** Recipe intro in the UI language (the Chinese intro until the translation is available). */
 @Composable
-fun rememberTranslatedTitle(zh: String): String {
-    val tr = LocalTr.current
-    val active = tr != null && tr.enabled
-    var out by remember(zh, tr?.key) { mutableStateOf(if (active) tr!!.mgr.titleCached(zh, tr.target) ?: zh else zh) }
-    LaunchedEffect(zh, tr?.key) {
-        if (active && out == zh) tr!!.mgr.title(zh, tr.target)?.let { out = it }
-    }
-    return if (active) out else zh
+fun rememberIntro(dish: Dish): String {
+    val tr = LocalTr.current ?: return dish.intro
+    val version by tr.mgr.version.collectAsState()
+    return remember(dish.path, dish.sha, tr.lang, version) { tr.mgr.intro(dish, tr.lang) }
 }
 
 fun Context.findActivity(): Activity? {
@@ -159,7 +145,7 @@ fun ElegantCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, co
 
 @Composable
 fun DishRow(dish: Dish, favorite: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val title = rememberTranslatedTitle(dish.title)
+    val title = rememberTitle(dish)
     ElegantCard(modifier.fillMaxWidth(), onClick) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(dish.categoryId))

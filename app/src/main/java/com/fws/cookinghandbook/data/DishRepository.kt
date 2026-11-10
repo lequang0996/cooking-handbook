@@ -116,7 +116,7 @@ class DishRepository(private val context: Context, private val prefs: Prefs) {
                 if (downloaded.isNotEmpty() || removed.isNotEmpty()) { persist(); publish() }
                 prefs.treeEtag = tree.etag
                 prefs.lastSync = now
-                SyncResult(true, downloaded.size + removed.size)
+                SyncResult(true, downloaded.size + removed.size, downloaded.map { it.path })
             } catch (e: Exception) {
                 SyncResult(false)
             }

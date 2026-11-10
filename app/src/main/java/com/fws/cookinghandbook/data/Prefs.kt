@@ -13,10 +13,28 @@ class Prefs(context: Context) {
     val theme: StateFlow<Int> = _theme
     fun setTheme(v: Int) { sp.edit().putInt("theme", v).apply(); _theme.value = v }
 
-    /** null = user never touched it (default depends on language). */
-    private val _translate = MutableStateFlow(if (sp.contains("translate")) sp.getBoolean("translate", true) else null)
-    val translate: StateFlow<Boolean?> = _translate
-    fun setTranslate(v: Boolean) { sp.edit().putBoolean("translate", v).apply(); _translate.value = v }
+    // ---- Gemini API keys (one per line in the UI, stored newline-separated) ----
+    private val _apiKeys = MutableStateFlow(parseKeys(sp.getString("gemini_keys", "").orEmpty()))
+    val apiKeys: StateFlow<List<String>> = _apiKeys
+
+    /** Adds every key found in [text] (any mix of newlines, spaces, commas); duplicates are ignored. Returns how many were new. */
+    fun addApiKeys(text: String): Int {
+        val fresh = parseKeys(text).filter { it !in _apiKeys.value }
+        if (fresh.isNotEmpty()) saveKeys(_apiKeys.value + fresh)
+        return fresh.size
+    }
+    fun removeApiKey(key: String) = saveKeys(_apiKeys.value - key)
+    fun clearApiKeys() = saveKeys(emptyList())
+
+    private fun saveKeys(list: List<String>) {
+        sp.edit().putString("gemini_keys", list.joinToString("\n")).apply()
+        _apiKeys.value = list
+    }
+
+    /** Dishes that are new or changed upstream and not yet translated into every language (survives restarts). */
+    var pendingTranslation: Set<String>
+        get() = sp.getStringSet("pending_translation", emptySet()).orEmpty().toSet()
+        set(v) { sp.edit().putStringSet("pending_translation", v).apply() }
 
     private val _ttsRate = MutableStateFlow(sp.getFloat("tts_rate", 2.0f))
     val ttsRate: StateFlow<Float> = _ttsRate
@@ -54,4 +72,9 @@ class Prefs(context: Context) {
     var seedVersion: Int
         get() = sp.getInt("seed_version", -1)
         set(v) { sp.edit().putInt("seed_version", v).apply() }
+
+    companion object {
+        fun parseKeys(text: String): List<String> =
+            text.split('\n', '\r', ' ', '\t', ',', ';').map { it.trim().trim('"', '\'') }.filter { it.length >= 8 }.distinct()
+    }
 }

@@ -32,7 +32,7 @@ TÍNH NĂNG
 • Trang công thức gọn gàng – phần giới thiệu ngắn kèm ngày cập nhật mới nhất, mức độ khó và calo ước tính, ảnh món ăn (nếu có), một danh sách gộp nguyên liệu – dụng cụ – định lượng, cùng các bước thực hiện được đánh số. Không có gì làm bạn xao nhãng.
 • Đọc to – chạm nút để nghe đọc công thức. Chạm vào bất kỳ bước nào để đọc từ đó; bước đang đọc được làm nổi bật.
 • Yêu thích – chạm biểu tượng trái tim ở bất kỳ món nào và xem lại trong thẻ Yêu thích.
-• Dịch ngay trên thiết bị – kho công thức gốc bằng tiếng Trung. Bật dịch để đọc bằng tiếng Việt, tiếng Anh, Tây Ban Nha, Bồ Đào Nha, Nga, Nhật, Hàn hoặc Trung giản thể. Bản dịch chạy trên điện thoại sau khi tải gói ngôn ngữ một lần (khoảng 30 MB).
+• Dịch sang 8 ngôn ngữ – kho công thức gốc bằng tiếng Trung và đã có sẵn bản dịch tiếng Việt, tiếng Anh, Tây Ban Nha, Bồ Đào Nha, Nga, Nhật, Hàn. Món mới và món được chỉnh sửa được tự động dịch bằng Gemini khi bạn thêm API key của mình trong Cài đặt (hỗ trợ nhiều key, dùng luân phiên).
 • Luôn mới – món mới và chỉnh sửa của món cũ được tự động cập nhật ở chế độ nền, kho công thức lớn dần mà bạn không cần cài lại ứng dụng.
 • Giao diện sáng và tối – phong cách xanh mực, giấy da và vàng đồng thanh lịch, kèm chế độ tối dễ chịu.
 • 8 ngôn ngữ – English, 简体中文, Español, Português, Русский, 日本語, 한국어 và Tiếng Việt. Đổi ngôn ngữ bất cứ lúc nào trong Cài đặt.
@@ -40,7 +40,7 @@ TÍNH NĂNG
 
 CẦN BIẾT
 
-• Dùng được khi không có mạng: toàn bộ kho công thức đã có sẵn trong ứng dụng. Chỉ cần internet để lấy bản cập nhật, tải gói dịch và hiển thị quảng cáo.
+• Dùng được khi không có mạng: toàn bộ kho công thức đã có sẵn trong ứng dụng. Chỉ cần internet để lấy bản cập nhật, dịch món mới và hiển thị quảng cáo.
 • Ứng dụng có quảng cáo (Google AdMob). Ở những khu vực yêu cầu, bạn sẽ thấy biểu mẫu đồng ý và có thể xem lại lựa chọn trong Cài đặt.
 • Không cần tài khoản, không cần đăng ký. Món yêu thích và cài đặt chỉ lưu trên thiết bị của bạn.
 • Công thức lấy từ dự án mã nguồn mở HowToCook của Anduin2017 và các cộng tác viên (Unlicense, phạm vi công cộng). Cooking Handbook là ứng dụng độc lập, không liên kết với dự án này.
@@ -79,7 +79,7 @@ WHAT YOU GET
 • Focused recipe pages – a short introduction with the date the recipe was last updated, a difficulty level and estimated calories, photos of the dish when available, one merged list of ingredients, tools and quantities, and numbered cooking steps. Nothing else gets in your way.
 • Read aloud – tap the button and the recipe is read to you. Tap any step to start from there. The step being read is highlighted.
 • Favorites – tap the heart on any recipe and find it later in the Favorites tab.
-• Translate on your device – the recipe collection is written in Chinese. Turn on translation and read it in English, Spanish, Portuguese, Russian, Japanese, Korean, Vietnamese or Simplified Chinese. Translation runs on your phone after a one-time language pack download (about 30 MB).
+• Translated into 8 languages – the recipe collection is written in Chinese and ships with translations in English, Spanish, Portuguese, Russian, Japanese, Korean and Vietnamese. New and edited dishes are translated automatically with Gemini when you add your own API key in Settings (several keys are supported and used in turn).
 • Always fresh – new dishes and edits to existing recipes are picked up automatically in the background, so the handbook keeps growing without you installing anything.
 • Beautiful in light and dark – a refined ink-blue, parchment and gold design, with a comfortable dark mode.
 • 8 languages – English, 简体中文, Español, Português, Русский, 日本語, 한국어 and Tiếng Việt. Change the language any time in Settings.
@@ -87,7 +87,7 @@ WHAT YOU GET
 
 GOOD TO KNOW
 
-• Works offline: the whole collection is built in. An internet connection is only needed to fetch updates, download a translation pack, and show ads.
+• Works offline: the whole collection is built in. An internet connection is only needed to fetch updates, translate new dishes, and show ads.
 • The app contains ads (Google AdMob). In regions where it is required you will see a consent form, and you can review your choice in Settings.
 • No account, no sign-up. Your favorites and settings stay on your device.
 • Recipes come from the open-source project HowToCook by Anduin2017 and contributors (Unlicense, public domain). Cooking Handbook is an independent app and is not affiliated with that project.

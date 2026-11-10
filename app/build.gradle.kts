@@ -92,10 +92,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("androidx.work:work-runtime-ktx:2.10.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     implementation("com.google.android.play:app-update:2.1.0")          // In-App Update (flexible)
     implementation("com.google.android.gms:play-services-ads:23.6.0")   // AdMob
     implementation("com.google.android.ump:user-messaging-platform:3.1.0") // consent (GDPR / US states)
-    implementation("com.google.mlkit:translate:17.0.3")                 // on-device translation
 }

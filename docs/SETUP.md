@@ -48,3 +48,12 @@ The same URL is compiled into the app (Settings → Privacy Policy) automaticall
 ## 7. Testing In-App Update
 In-App Update only works for builds installed from Google Play. Use **Internal app sharing** or an internal testing track,
 install an older `versionCode`, upload a higher one, then open the older app.
+
+## 8. Translations (Gemini)
+Recipes are Chinese. The app translates them with **Gemini 3.5 Flash-Lite** (`gemini-3.5-flash-lite`) using API keys the user pastes in Settings (one per line, shown as `AIz...x9Q`, used in turn; a key that hits a rate limit is skipped for a while).
+- Dish **titles** for all 8 languages are hand-written in `assets/titles.json` (no key needed).
+- Full recipe text can ship inside the app: `assets/translations/<lang>.json` (same shape as the app's own cache, keyed by dish path + git sha).
+  Generate them once: add the repository secret `GEMINI_API_KEYS` and run **Actions → Translate bundled recipes (Gemini)**, or locally
+  `GEMINI_API_KEYS=$'key1\nkey2' python3 tools/translate_seed.py` (resumable; `--dry-run` only checks parsing).
+- New dishes and edits found by the daily sync are queued automatically (all 7 languages) and translated as soon as a key exists; a recipe opened before that is translated at once. Results are cached per language in the app's private storage.
+

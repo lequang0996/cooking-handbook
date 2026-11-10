@@ -11,13 +11,17 @@ import androidx.work.WorkerParameters
 import com.fws.cookinghandbook.CookApp
 import java.util.concurrent.TimeUnit
 
-/** Background check for new/changed dishes, once a day, only with a network connection. */
+/** Background check for new/changed dishes (and their Gemini translation), once a day, only with a network connection. */
 class SyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val app = applicationContext as CookApp
         app.repository.load()
         val r = app.repository.sync()
-        return if (r.ok) Result.success() else Result.retry()
+        if (!r.ok) return Result.retry()
+        // new/changed dishes are translated with Gemini (needs at least one API key; otherwise they stay queued)
+        app.translations.markChanged(r.changedPaths)
+        val translated = app.translations.translatePendingAndWait(app.repository.dishes.value)
+        return if (translated) Result.success() else Result.retry()
     }
 
     companion object {

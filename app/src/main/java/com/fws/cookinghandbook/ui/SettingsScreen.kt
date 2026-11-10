@@ -1,5 +1,11 @@
 package com.fws.cookinghandbook.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Build
+import android.os.PersistableBundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,12 +29,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,6 +67,7 @@ import com.fws.cookinghandbook.BuildConfig
 import com.fws.cookinghandbook.R
 import com.fws.cookinghandbook.util.AdsConsent
 import com.fws.cookinghandbook.util.Lang
+import com.fws.cookinghandbook.util.maskKey
 import java.util.Locale
 
 private data class LangOption(val tag: String, val flag: String, val native: String)
@@ -68,9 +84,7 @@ fun SettingsScreen(vm: AppViewModel, onGuide: () -> Unit) {
     val context = LocalContext.current
     val uri = LocalUriHandler.current
     val theme by vm.prefs.theme.collectAsState()
-    val translatePref by vm.prefs.translate.collectAsState()
     val rate by vm.prefs.ttsRate.collectAsState()
-    val appLang = remember { Lang.current(context) }
     var langDialog by remember { mutableStateOf(false) }
 
     val currentTag = AppCompatDelegate.getApplicationLocales().toLanguageTags()
@@ -106,15 +120,7 @@ fun SettingsScreen(vm: AppViewModel, onGuide: () -> Unit) {
             }
         }
 
-        if (appLang != "zh") ElegantCard(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.settings_translate), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                    Switch(checked = translatePref == true, onCheckedChange = { vm.prefs.setTranslate(it) })
-                }
-                Text(stringResource(R.string.settings_translate_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
+        if (Lang.current(context) != "zh") GeminiKeysCard(vm)
 
         ElegantCard(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
@@ -143,6 +149,84 @@ fun SettingsScreen(vm: AppViewModel, onGuide: () -> Unit) {
         AppCompatDelegate.setApplicationLocales(
             if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag)
         )
+    }
+}
+
+/** Gemini API keys: paste several (one per line), shown as "AIz...x9Q", copy one or all, remove one. */
+@Composable
+private fun GeminiKeysCard(vm: AppViewModel) {
+    val context = LocalContext.current
+    val keys by vm.prefs.apiKeys.collectAsState()
+    val busy by vm.translations.busy.collectAsState()
+    val error by vm.translations.lastError.collectAsState()
+    var input by remember { mutableStateOf("") }
+
+    fun clipboard() = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    fun copy(text: String) {
+        val clip = ClipData.newPlainText("Gemini API key", text)
+        if (Build.VERSION.SDK_INT >= 33) clip.description.extras = PersistableBundle().apply { putBoolean("android.content.extra.IS_SENSITIVE", true) }
+        clipboard().setPrimaryClip(clip)
+        if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, R.string.gemini_copied, Toast.LENGTH_SHORT).show()
+    }
+    fun paste() {
+        val text = clipboard().primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+        if (text.isNotBlank()) input = if (input.isBlank()) text else input.trimEnd() + "\n" + text
+    }
+    fun add() {
+        val n = vm.prefs.addApiKeys(input)
+        if (n > 0) { input = ""; Toast.makeText(context, context.getString(R.string.gemini_added, n), Toast.LENGTH_SHORT).show() }
+    }
+
+    ElegantCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.settings_gemini), style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(stringResource(R.string.settings_gemini_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = input, onValueChange = { input = it },
+                placeholder = { Text(stringResource(R.string.gemini_keys_hint)) },
+                minLines = 2, maxLines = 6,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, keyboardType = KeyboardType.Uri),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { paste() }) { Text(stringResource(R.string.gemini_paste)) }
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { add() }, enabled = input.isNotBlank()) { Text(stringResource(R.string.gemini_add)) }
+            }
+
+            if (keys.isEmpty()) {
+                Text(stringResource(R.string.gemini_none), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                keys.forEachIndexed { i, key ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("${i + 1}.", Modifier.width(28.dp), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(maskKey(key), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace))
+                        IconButton({ copy(key) }) { Icon(Icons.Filled.ContentCopy, stringResource(R.string.gemini_copy), tint = MaterialTheme.colorScheme.secondary) }
+                        IconButton({ vm.prefs.removeApiKey(key) }) { Icon(Icons.Filled.Delete, stringResource(R.string.gemini_remove), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    }
+                }
+                if (keys.size > 1) TextButton(onClick = { copy(keys.joinToString("\n")) }) { Text(stringResource(R.string.gemini_copy_all)) }
+            }
+
+            val status = when {
+                keys.isEmpty() -> null
+                busy > 0 -> stringResource(R.string.gemini_busy, busy)
+                error == "no_key" -> stringResource(R.string.gemini_error_key)
+                error == "busy" -> stringResource(R.string.gemini_error_busy)
+                error != null -> error
+                else -> null
+            }
+            if (status != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(status, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+            }
+        }
     }
 }
 

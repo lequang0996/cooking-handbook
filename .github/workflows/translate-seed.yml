@@ -1,0 +1,34 @@
+name: Translate bundled recipes (Gemini)
+
+# Manual run. Needs the repository secret GEMINI_API_KEYS (one API key per line).
+# Writes app/src/main/assets/translations/<lang>.json and commits them. Safe to run again: finished dishes are skipped.
+on:
+  workflow_dispatch:
+    inputs:
+      langs:
+        description: "Languages (comma separated)"
+        default: "en,es,pt,ru,ja,ko,vi"
+
+permissions:
+  contents: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Translate
+        env:
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS }}
+        run: python3 tools/translate_seed.py --langs "${{ inputs.langs }}"
+      - name: Commit translations
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add app/src/main/assets/translations
+          git diff --cached --quiet || git commit -m "Update bundled recipe translations"
+          git push

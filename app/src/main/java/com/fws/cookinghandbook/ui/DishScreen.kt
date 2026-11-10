@@ -45,9 +45,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,40 +55,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.fws.cookinghandbook.AppViewModel
 import com.fws.cookinghandbook.R
-import com.fws.cookinghandbook.data.Dish
+import com.fws.cookinghandbook.data.asText
 import com.fws.cookinghandbook.util.Lang
 import com.fws.cookinghandbook.util.RemoteImage
 import java.text.DateFormat
 import java.util.Date
-
-private data class DishText(
-    val title: String, val intro: String, val ingredients: List<String>,
-    val servingNote: String, val quantities: List<String>, val steps: List<String>,
-)
-
-private fun Dish.asText() = DishText(title, intro, ingredients, servingNote, quantities, steps)
-
-private val sentenceSplit = Regex("(?<=[。；！？])")
-
-/** Translates every piece of the recipe; the flag is false if any piece could not be translated. */
-private suspend fun translateDish(tr: Tr, d: Dish): Pair<DishText, Boolean> {
-    var ok = true
-    // sentence by sentence: the offline model is much more accurate on short inputs
-    suspend fun t(s: String): String {
-        if (s.isBlank()) return s
-        return s.split("\n").joinToString("\n") { line ->
-            if (line.isBlank()) line else line.split(sentenceSplit).filter { it.isNotBlank() }.joinToString(" ") { sentence ->
-                tr.mgr.translate(sentence.trim(), "zh", tr.target) ?: run { ok = false; sentence }
-            }
-        }
-    }
-    val title = tr.mgr.title(d.title, tr.target) ?: run { ok = false; d.title }
-    val text = DishText(
-        title, t(d.intro), d.ingredients.map { t(it) }, t(d.servingNote),
-        d.quantities.map { t(it) }, d.steps.map { t(it) },
-    )
-    return text to ok
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,19 +70,20 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
     val dish = dishes.firstOrNull { it.path == path }
     if (dish == null) { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)); return }
 
+    // Translation: use what is available now (bundled / already translated by Gemini); otherwise ask Gemini and show
+    // the Chinese text until it arrives. The screen refreshes itself when `version` changes.
     val tr = LocalTr.current
-    var content by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(dish.asText().let { base -> if (tr != null && tr.enabled) tr.mgr.titleCached(dish.title, tr.target)?.let { base.copy(title = it) } ?: base else base }) }
-    var contentLang by remember(dish.path, dish.sha, tr?.key) { mutableStateOf("zh") }
-    var translating by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
-    var translateFailed by remember(dish.path, dish.sha, tr?.key) { mutableStateOf(false) }
-    LaunchedEffect(dish.path, dish.sha, tr?.key) {
-        if (tr != null && tr.enabled) {
-            translating = true
-            val (text, ok) = translateDish(tr, dish)
-            translating = false
-            if (ok) { content = text; contentLang = tr.target; translateFailed = false } else translateFailed = true
-        }
-    }
+    val lang = tr?.lang ?: "zh"
+    val keys by vm.prefs.apiKeys.collectAsState()
+    val trVersion by vm.translations.version.collectAsState()
+    val trBusy by vm.translations.busy.collectAsState()
+    val trError by vm.translations.lastError.collectAsState()
+    LaunchedEffect(dish.path, dish.sha, lang, keys.size) { if (lang != "zh") vm.translations.request(dish, lang) }
+    val translated = remember(dish.path, dish.sha, lang, trVersion) { if (lang == "zh") null else vm.translations.text(dish, lang) }
+    val content = translated ?: dish.asText() // read aloud in the same language as the text, so keep it consistent
+    val shownTitle = remember(dish.path, dish.sha, lang, trVersion) { vm.translations.title(dish, lang) }
+    val contentLang = if (translated != null) lang else "zh"
+    val needsTranslation = lang != "zh" && translated == null
 
     val tts = vm.tts
     val speaking by tts.speaking.collectAsState()
@@ -187,7 +157,7 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
             }
             // header
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(HeroBrush).padding(20.dp)) {
-                Text(content.title, color = androidx.compose.ui.graphics.Color.White, style = MaterialTheme.typography.headlineMedium)
+                Text(shownTitle, color = androidx.compose.ui.graphics.Color.White, style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.dish_updated, dateText), color = Gold, style = MaterialTheme.typography.labelLarge)
                 if (content.intro.isNotBlank()) {
@@ -195,12 +165,15 @@ fun DishScreen(vm: AppViewModel, path: String, onBack: () -> Unit) {
                     Text(content.intro, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            if (translating) Row(verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.tr_pending), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (needsTranslation) when {
+                keys.isEmpty() -> Text(stringResource(R.string.tr_no_key), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                trBusy > 0 || trError == null -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.tr_pending), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                else -> Text(stringResource(R.string.tr_failed), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (translateFailed) Text(stringResource(R.string.tr_unavailable), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             // rating: difficulty + estimated calories
             ElegantCard(Modifier.fillMaxWidth()) {

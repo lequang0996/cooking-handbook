@@ -1,2 +1,1 @@
--keep class com.google.mlkit.** { *; }
--dontwarn com.google.mlkit.**
+# No special rules needed: translation uses plain HttpURLConnection + org.json.

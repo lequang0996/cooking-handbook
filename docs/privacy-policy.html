@@ -43,8 +43,8 @@ certain device data as described in section 5.</p>
 
 <h2>3. Data stored on your device only</h2>
 <ul>
-  <li>Favorite recipes, theme, language, reading speed and translation preferences.</li>
-  <li>A local copy of the recipes and a cache of translated sentences.</li>
+  <li>Favorite recipes, theme, language, reading speed and the Gemini API keys you enter (stored only on your device, never sent to us).</li>
+  <li>A local copy of the recipes and the translations of those recipes.</li>
 </ul>
 <p>This data is never sent to us. You can remove it any time by clearing the App's storage or uninstalling the App.</p>
 
@@ -52,7 +52,7 @@ certain device data as described in section 5.</p>
 <div class="scroll"><table>
 <tr><th>Service</th><th>Why</th><th>What the provider can see</th></tr>
 <tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Download new and updated recipes, and the photos of a recipe when you open it, from the open-source project <em>Anduin2017/HowToCook</em>.</td><td>Your IP address and request headers, under <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>. No personal data is sent by the App.</td></tr>
-<tr><td>Google ML Kit Translation</td><td>Translates recipes <em>on your device</em>. The first time you use a language, a language pack (about 30 MB per language: Chinese and yours) is downloaded from Google, only after you agree.</td><td>Recipe text is <strong>not</strong> sent to Google; only the model download request is made. See <a href="https://developers.google.com/ml-kit/android-data-disclosure">ML Kit data disclosure</a>.</td></tr>
+<tr><td>Google Gemini API</td><td>Translates new and changed recipes. Only if <em>you</em> enter your own API key in Settings.</td><td>The recipe text being translated (not personal data) and your API key are sent to Google (<code>generativelanguage.googleapis.com</code>). Your use of the key is subject to <a href="https://ai.google.dev/gemini-api/terms">Google's Gemini API terms</a>. Without a key nothing is sent.</td></tr>
 <tr><td>Google Play (In-App Update, Play Core)</td><td>Checks whether a newer version of the App is available and downloads it in the background.</td><td>Handled by Google Play under <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</td></tr>
 <tr><td>Google AdMob and Google User Messaging Platform</td><td>Display ads and collect your consent choices.</td><td>See section 5.</td></tr>
 </table></div>
@@ -71,7 +71,7 @@ approximate location derived from the IP address, and diagnostics to serve, meas
 
 <h2>6. Permissions</h2>
 <ul>
-  <li><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>: sync recipes, download language packs, show ads.</li>
+  <li><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>: sync recipes, translate recipes with your Gemini key, show ads.</li>
   <li><code>com.google.android.gms.permission.AD_ID</code>: lets the ads SDK read the Advertising ID (Android 13+).</li>
 </ul>
 
@@ -109,8 +109,8 @@ Danh sách yêu thích và cài đặt chỉ lưu trên thiết bị. Ứng dụ
 
 <h2>3. Dữ liệu chỉ lưu trên thiết bị</h2>
 <ul>
-  <li>Món yêu thích, giao diện sáng/tối, ngôn ngữ, tốc độ đọc và tùy chọn dịch.</li>
-  <li>Bản sao công thức và bộ nhớ đệm các câu đã dịch.</li>
+  <li>Món yêu thích, giao diện sáng/tối, ngôn ngữ, tốc độ đọc và các API key Gemini bạn nhập (chỉ lưu trên thiết bị, không gửi cho chúng tôi).</li>
+  <li>Bản sao công thức và bản dịch của các công thức đó.</li>
 </ul>
 <p>Dữ liệu này không bao giờ được gửi cho chúng tôi. Bạn có thể xóa bất kỳ lúc nào bằng cách xóa dữ liệu ứng dụng hoặc gỡ cài đặt.</p>
 
@@ -118,7 +118,7 @@ Danh sách yêu thích và cài đặt chỉ lưu trên thiết bị. Ứng dụ
 <div class="scroll"><table>
 <tr><th>Dịch vụ</th><th>Mục đích</th><th>Bên cung cấp có thể thấy</th></tr>
 <tr><td>GitHub (api.github.com, raw.githubusercontent.com)</td><td>Tải món mới, nội dung cập nhật và ảnh của món khi bạn mở món đó từ dự án mã nguồn mở <em>Anduin2017/HowToCook</em>.</td><td>Địa chỉ IP và tiêu đề yêu cầu, theo <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">chính sách của GitHub</a>. Ứng dụng không gửi dữ liệu cá nhân.</td></tr>
-<tr><td>Google ML Kit Translation</td><td>Dịch công thức <em>ngay trên thiết bị</em>. Lần đầu dùng một ngôn ngữ, gói ngôn ngữ (khoảng 30 MB mỗi ngôn ngữ: tiếng Trung và ngôn ngữ của bạn) được tải từ Google, chỉ sau khi bạn đồng ý.</td><td>Nội dung công thức <strong>không</strong> gửi cho Google; chỉ có yêu cầu tải mô hình. Xem <a href="https://developers.google.com/ml-kit/android-data-disclosure">công bố dữ liệu ML Kit</a>.</td></tr>
+<tr><td>Google Gemini API</td><td>Dịch món mới và món được chỉnh sửa. Chỉ hoạt động khi <em>bạn</em> nhập API key của mình trong Cài đặt.</td><td>Nội dung công thức cần dịch (không phải dữ liệu cá nhân) và API key của bạn được gửi tới Google (<code>generativelanguage.googleapis.com</code>). Việc dùng key tuân theo <a href="https://ai.google.dev/gemini-api/terms">điều khoản Gemini API của Google</a>. Không có key thì không gửi gì cả.</td></tr>
 <tr><td>Google Play (In-App Update, Play Core)</td><td>Kiểm tra và tải bản cập nhật mới của Ứng dụng ở chế độ nền.</td><td>Do Google Play xử lý theo <a href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</a>.</td></tr>
 <tr><td>Google AdMob và Google User Messaging Platform</td><td>Hiển thị quảng cáo và ghi nhận lựa chọn đồng ý.</td><td>Xem mục 5.</td></tr>
 </table></div>
@@ -137,7 +137,7 @@ vị trí gần đúng suy ra từ IP và dữ liệu chẩn đoán để phân 
 
 <h2>6. Quyền truy cập</h2>
 <ul>
-  <li><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>: đồng bộ công thức, tải gói ngôn ngữ, hiển thị quảng cáo.</li>
+  <li><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>: đồng bộ công thức, dịch công thức bằng key Gemini của bạn, hiển thị quảng cáo.</li>
   <li><code>com.google.android.gms.permission.AD_ID</code>: cho phép SDK quảng cáo đọc Advertising ID (Android 13+).</li>
 </ul>
 

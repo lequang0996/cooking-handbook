@@ -20,6 +20,18 @@ data class Dish(
     val sha: String,
 )
 
+/** The translatable part of a recipe. Used both for the Chinese original and for every translation. */
+data class DishText(
+    val title: String,
+    val intro: String,
+    val ingredients: List<String>,
+    val servingNote: String,
+    val quantities: List<String>,
+    val steps: List<String>,
+)
+
+fun Dish.asText() = DishText(title, intro, ingredients, servingNote, quantities, steps)
+
 /** Raw upstream file as stored on disk (markdown + git blob sha + last change). */
 data class RawDish(val path: String, val sha: String, val updatedAt: Long, val markdown: String)
 
@@ -42,4 +54,5 @@ object Categories {
     fun find(id: String): Category? = byId[id]
 }
 
-data class SyncResult(val ok: Boolean, val changed: Int = 0)
+/** [changedPaths] = dishes that are new or whose content changed (they need a fresh translation). */
+data class SyncResult(val ok: Boolean, val changed: Int = 0, val changedPaths: List<String> = emptyList())

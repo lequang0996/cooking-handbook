@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -21,7 +20,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -57,11 +55,9 @@ fun AppRoot(vm: AppViewModel, updater: InAppUpdater, adsReady: StateFlow<Boolean
     val route = backStack?.destination?.route
     val snackbar = remember { SnackbarHostState() }
 
-    // translation needs a one-time download of language packs, so it only turns on after the user agrees
+    // recipes are translated by Gemini into the UI language (see TranslationManager)
     val lang = remember { Lang.current(context) }
-    val translatePref by vm.prefs.translate.collectAsState()
-    val enabled = lang != "zh" && translatePref == true
-    val tr = remember(enabled, lang) { Tr(enabled, lang, vm.translations) }
+    val tr = remember(lang) { Tr(vm.translations, lang) }
 
     val tabs = listOf(
         Tab("home", R.string.tab_home, Icons.Filled.Home),
@@ -80,16 +76,6 @@ fun AppRoot(vm: AppViewModel, updater: InAppUpdater, adsReady: StateFlow<Boolean
             val r = snackbar.showSnackbar(readyText, restartText, duration = androidx.compose.material3.SnackbarDuration.Indefinite)
             if (r == SnackbarResult.ActionPerformed) updater.completeUpdate()
         }
-    }
-
-    if (lang != "zh" && translatePref == null) {
-        AlertDialog(
-            onDismissRequest = { vm.prefs.setTranslate(false) },
-            title = { Text(stringResource(R.string.tr_dialog_title)) },
-            text = { Text(stringResource(R.string.tr_dialog_body)) },
-            confirmButton = { TextButton({ vm.prefs.setTranslate(true) }) { Text(stringResource(R.string.tr_dialog_yes)) } },
-            dismissButton = { TextButton({ vm.prefs.setTranslate(false) }) { Text(stringResource(R.string.tr_dialog_no)) } },
-        )
     }
 
     CompositionLocalProvider(LocalTr provides tr) {
